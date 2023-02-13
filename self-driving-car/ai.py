@@ -23,3 +23,26 @@ class Network(nn.Module):
         x = F.relu(self.fullConnection1(state))
         q_values = self.fullConnection2(x)
         return q_values
+
+
+class ReplayMemory(object):
+
+    def __init__(self, capacity):
+        self.capacity = capacity
+        self.memory = list()
+
+    def push(self, event):
+        # event = last state, new state, last action, last reward
+        self.memory.append(event)
+        if len(self.memory > self.capacity):
+            del self.memory[0]
+
+    def sample(self, batch_size):
+        """
+            LIST [[1,2,3], [4,5,6]] then zip(*LIST) = [[1,4], [2,5], [3,6]]
+            So if A and B are of shape (3, 4):
+            torch.cat([A, B], dim=0) will be of shape (6, 4)
+            torch.stack([A, B], dim=0) will be of shape (2, 3, 4)
+        """
+        samples = zip(*random.sample(self.memory, batch_size))
+        return map(lambda x: Variable(torch.cat(x, 0)), samples)
